@@ -26,7 +26,12 @@ async function registerUser(req, res) {
         { expiresIn: "3d" }
     );
 
-    res.cookie("token", token);
+   res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 3 * 24 * 60 * 60 * 1000
+});
    console.log("Calling sendRegistrationEmail...");
 await Service.sendRegistrationEmail(user.email, user.name);
 console.log("Email function completed.");
@@ -40,23 +45,25 @@ console.log("Email function completed.");
     });
 }
 
-async function loginUser(req,res)
-{
-    const {email,password}=req.body;
-    const user= await userModel.findOne({email}).select("+password");
-    if(!user)
-    {
+async function loginUser(req, res) {
+    const { email, password } = req.body;
+
+    const user = await userModel
+        .findOne({ email })
+        .select("+password");
+
+    if (!user) {
         return res.status(401).json({
-            message:"Email or Password is invalid"
-        })
+            message: "Email or Password is invalid"
+        });
     }
 
-    const ValidPassword=await user.comparePassword(password)
-    if(!ValidPassword)
-    {
-          return res.status(401).json({
-            message:"Email or Password is invalid"
-        })
+    const validPassword = await user.comparePassword(password);
+
+    if (!validPassword) {
+        return res.status(401).json({
+            message: "Email or Password is invalid"
+        });
     }
 
     const token = jwt.sign(
@@ -65,12 +72,16 @@ async function loginUser(req,res)
         { expiresIn: "3d" }
     );
 
-    res.cookie("token", token);
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 3 * 24 * 60 * 60 * 1000
+    });
 
-    return res.status(201).json({
-        message:"Login Successful"
-    })
-
+    return res.status(200).json({
+        message: "Login Successful"
+    });
 }
 async function userLogoutController(req, res) {
     const token = req.cookies.token || req.headers.authorization?.split(" ")[ 1 ]
