@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "LedgerBank"
+description = "A professional fintech dashboard for managing bank accounts, viewing balances, transferring money, reviewing transaction history, and managing a user profile."
+version = "1.0.0"
+id = "artifacts/ledgerbank"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23488
+
+[services.development]
+run = "pnpm --filter @workspace/ledgerbank run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ledgerbank", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ledgerbank/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23488"
+BASE_PATH = "/"
